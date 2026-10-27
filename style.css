@@ -460,32 +460,9 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .about-text p { color: var(--muted); font-size: 18px; margin-bottom: 1em; }
 
 
-/* ---- work: pinned, scrolls sideways ---- */
-.work { position: relative; height: 400vh; } /* real height is set in js from the track width */
-.work-sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100svh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 34px;
-  overflow: hidden;
-}
-.work-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-.work-head .label { flex: 1; margin: 0; }
-.work-count { color: var(--muted); }
-.work-count span { color: var(--red); }
-
-.work-track {
-  display: flex;
-  gap: 32px;
-  padding: 0 max(var(--pad), (100vw - 1240px) / 2);
-  will-change: transform;
-}
+/* ---- work: the one real project, and an open spot next to it ---- */
+.work-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 24px; }
 .project {
-  flex: 0 0 min(560px, 78vw);
   display: flex;
   flex-direction: column;
   border: 1px solid var(--line);
@@ -495,7 +472,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .project:hover { border-color: var(--red); }
 .project-img {
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 7;
   overflow: hidden;
   background:
     radial-gradient(circle at 75% 25%, var(--red-2), transparent 55%),
@@ -505,38 +482,12 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 [data-theme="light"] .project-img {
   background: radial-gradient(circle at 75% 25%, rgba(255, 0, 0, .25), transparent 55%), #fff;
 }
-/* fine grid lines over the placeholder */
-.project-img::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 32px 32px;
-  opacity: .6;
-  transition: transform 1.2s var(--ease);
-}
-.project:hover .project-img::before { transform: scale(1.15) rotate(2deg); }
-.project-num {
-  position: absolute;
-  bottom: -.12em; right: 14px;
-  font-size: clamp(90px, 12vw, 170px);
-  font-weight: 900;
-  font-stretch: var(--wide);
-  line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--text);
-  opacity: .8;
-  transition: transform .8s var(--ease), color .5s;
-}
-.project:hover .project-num { transform: translateY(-14px); color: var(--red); -webkit-text-stroke-color: var(--red); }
 
 .project-info { padding: 26px 28px 28px; display: flex; flex-direction: column; flex: 1; }
 .project h3 { font-size: 28px; font-weight: 800; font-stretch: var(--wide); letter-spacing: -.02em; text-transform: uppercase; margin-bottom: 10px; }
 .project-info > p { color: var(--muted); margin-bottom: 18px; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 26px; }
 .chips li { padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; color: var(--muted); }
-/* projects that don't exist yet */
-.chips .open { border-color: var(--red); color: var(--red); }
 .project-links { display: flex; gap: 22px; margin-top: auto; font-weight: 600; }
 .project-links a { position: relative; }
 .project-links a::after {
@@ -550,12 +501,64 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   transition: transform .4s var(--ease);
 }
 .project-links a:hover::after { transform: scaleX(1); transform-origin: left; }
-/* links that don't go anywhere yet look switched off. put a real address in the href and they come back */
-.project-links a[href="#"] { opacity: .35; pointer-events: none; }
 
-.work-bar { height: 2px; background: var(--line); }
-.work-bar i { display: block; height: 100%; width: 0; background: var(--red); }
+/* numbers about this page, measured in the visitor's browser */
+.live-intro { margin-bottom: 10px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+[lang="ka"] .live-intro { text-transform: none; letter-spacing: 0; }
+.live { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 26px; border: 1px solid var(--line); }
+.live div { display: grid; gap: 6px; padding: 16px; }
+.live div + div { border-left: 1px solid var(--line); }
+.live .mono { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+.live strong { font-size: clamp(22px, 2.2vw, 32px); font-weight: 800; font-stretch: var(--wide); letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.live small { font-size: .45em; color: var(--red); margin-left: 3px; letter-spacing: 0; }
 
+/* the open spot: dashed until you hover, then it fills red like the buttons */
+.project-next {
+  position: relative;
+  justify-content: flex-end;
+  gap: 12px;
+  min-height: 360px;
+  padding: 112px 28px 28px; /* room for the plus at the top */
+  border-style: dashed;
+  background: transparent;
+  overflow: hidden;
+  isolation: isolate;
+  transition: border-color .4s, color .35s var(--ease);
+}
+.project-next::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--red);
+  transform: translateY(101%);
+  transition: transform .5s var(--ease);
+}
+.project-next:hover { border-style: solid; color: var(--on-red); }
+.project-next:hover::before { transform: none; }
+.project-next p { color: var(--muted); transition: color .35s; }
+.project-next:hover p, .project-next:hover .next-tag { color: var(--on-red); }
+.next-tag { color: var(--red); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; transition: color .35s; }
+[lang="ka"] .next-tag { text-transform: none; letter-spacing: 0; }
+.next-plus {
+  position: absolute;
+  top: 28px; right: 28px;
+  width: 58px; height: 58px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  transition: rotate .6s var(--ease);
+}
+.next-plus::before, .next-plus::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 20px; height: 2px;
+  background: currentColor;
+  translate: -50% -50%;
+}
+.next-plus::after { rotate: 90deg; }
+.project-next:hover .next-plus { rotate: 90deg; }
+.next-cta { margin-top: 6px; font-weight: 700; }
 
 /* ---- skills ---- */
 .skills { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
@@ -620,16 +623,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .job h3 { font-size: clamp(24px, 3vw, 34px); font-weight: 800; font-stretch: var(--wide); letter-spacing: -.02em; text-transform: uppercase; }
 .where { color: var(--red); font-weight: 500; margin: 4px 0 10px; }
 .job p:last-child { color: var(--muted); max-width: 36em; }
-
-
-/* ---- live numbers ---- */
-.live-intro { max-width: 36em; font-size: 20px; color: var(--muted); margin-bottom: 40px; }
-.live { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); }
-.live div { padding: 26px 24px; display: grid; gap: 10px; }
-.live div + div { border-left: 1px solid var(--line); }
-.live .mono { color: var(--muted); text-transform: uppercase; }
-.live strong { font-size: clamp(32px, 4vw, 52px); font-weight: 800; font-stretch: var(--wide); letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
-.live small { font-size: .4em; color: var(--red); margin-left: 4px; letter-spacing: 0; }
 
 
 /* ---- contact ---- */
@@ -856,9 +849,7 @@ body::after {
 .service > p { color: var(--muted); margin-bottom: 22px; }
 .service ul { display: grid; gap: 8px; margin-bottom: 30px; color: var(--text); }
 .service li::before { content: "→ "; color: var(--red); }
-.service-link { margin-top: auto; font-weight: 600; }
-.service-link span { display: inline-block; color: var(--red); transition: transform .4s var(--ease); }
-.service-link:hover span { transform: translateX(6px); }
+.services-cta { margin-top: 40px; }
 
 
 /* ---- highlighter swipe on key phrases (when the text scrolls in) ---- */
@@ -1108,9 +1099,9 @@ body { font-family: "Archivo", "Noto Sans Georgian", system-ui, sans-serif; }
 /* ---- little fake websites inside the project cards ---- */
 .mock {
   position: absolute;
-  left: 7%; top: 11%;
+  left: 12%; top: 14%;
   z-index: 1;
-  width: 64%;
+  width: 48%;
   aspect-ratio: 16 / 11;
   background: var(--bg);
   border: 1px solid var(--line);
@@ -1120,7 +1111,6 @@ body { font-family: "Archivo", "Noto Sans Georgian", system-ui, sans-serif; }
   transition: transform .8s var(--ease), border-color .4s;
 }
 .project:hover .mock { transform: perspective(900px) translateY(-6px); border-color: var(--red); }
-.project-num { z-index: 2; }
 
 .mock-bar { display: flex; align-items: center; gap: 4px; height: 10%; padding: 0 7px; border-bottom: 1px solid var(--line); }
 .mock-bar i { width: 5px; height: 5px; background: var(--line); }
@@ -1146,27 +1136,12 @@ body { font-family: "Archivo", "Noto Sans Georgian", system-ui, sans-serif; }
 .project:hover .mock b.accent { background: var(--red); animation: none; }
 
 .mock .line { height: 7px; min-height: 0; }
-.mock .w70 { width: 70%; } .mock .w60 { width: 60%; } .mock .w40 { width: 40%; }
-
-.board { grid-template-columns: repeat(3, 1fr); align-items: start; gap: 8px; }
-.board div { display: grid; gap: 6px; }
-.board b { height: 18px; }
-.board b.h { height: 7px; width: 60%; }
+.mock .w70 { width: 70%; } .mock .w40 { width: 40%; }
 
 .site { grid-template-rows: 2fr auto auto 1.3fr; gap: 7px; }
 .site .hero { height: 100%; }
 .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 .row3 b { height: 100%; }
-
-.tool { place-items: center; }
-.panel { width: 70%; display: grid; gap: 9px; padding: 10px; border: 1px solid var(--line); background: var(--card); }
-.toggle { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.toggle .line { flex: 1; }
-.switch { width: 22px; min-height: 0; height: 11px; border-radius: 6px !important; }
-
-.shop { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.shop div { display: grid; gap: 5px; align-content: start; }
-.shop .pic { aspect-ratio: 1; height: auto; }
 
 
 /* ---- big symbols in the skill tiles ---- */
@@ -1260,9 +1235,8 @@ kbd {
   .services { grid-template-columns: 1fr; }
   .steps { grid-template-columns: 1fr 1fr; row-gap: 50px; padding-top: 0; }
   .steps::before, .steps::after, .step::before { display: none; }
-  .live { grid-template-columns: 1fr 1fr; }
-  .live div:nth-child(3) { border-left: 0; }
-  .live div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .work-grid { grid-template-columns: 1fr; }
+  .project-next { min-height: 260px; }
 }
 
 /* below 1100px the links don't fit next to the buttons (georgian ones are longer), so it's the menu button */
@@ -1307,12 +1281,6 @@ kbd {
   .btn-big { padding: 18px 30px; font-size: 16px; }
   .hero-name .outline { -webkit-text-stroke-width: 1.5px; }
 
-  /* sideways scrolling doesn't feel right on phones, stack the projects instead */
-  .work { height: auto !important; padding: 90px 0; }
-  .work-sticky { position: static; height: auto; overflow: visible; }
-  .work-track { flex-direction: column; transform: none !important; padding: 0 var(--pad); }
-  .project { flex: none; }
-  .work-bar, .work-count { display: none; }
 
   .stats { grid-template-columns: 1fr 1fr 1fr; }
   .stat { padding-right: 10px; }
@@ -1320,6 +1288,8 @@ kbd {
   .skills { grid-template-columns: 1fr 1fr; }
   .job { grid-template-columns: 1fr; gap: 6px; padding-left: 28px; }
   .live { grid-template-columns: 1fr 1fr; }
+  .live div:nth-child(3) { border-left: 0; }
+  .live div:nth-child(n + 3) { border-top: 1px solid var(--line); }
 }
 
 /* ---- background behind the whole site ---- */

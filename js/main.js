@@ -128,11 +128,11 @@ if (reduceMotion || html.classList.contains('seen')) {
   const count = document.getElementById('curtain-count')
   const t0 = performance.now()
   const step = now => {
-    const t = Math.min(1, (now - t0) / 1100)
+    const t = Math.min(1, (now - t0) / 700)
     count.textContent = Math.round(easeOut(t) * 100)
     if (t < 1) return requestAnimationFrame(step)
     // wait for fonts too, so the name doesn't jump when the real font arrives
-    Promise.race([fontsReady, new Promise(r => setTimeout(r, 1200))]).then(() => {
+    Promise.race([fontsReady, new Promise(r => setTimeout(r, 600))]).then(() => {
       curtain.classList.add('up')
       setTimeout(startHero, 250)
       setTimeout(() => curtain.remove(), 1000)
@@ -425,22 +425,6 @@ const stepsObserver = new IntersectionObserver(([entry]) => {
 stepsObserver.observe(document.querySelector('.steps'))
 
 
-// ---- work: pinned section that scrolls sideways ----
-const work = document.getElementById('work')
-const track = document.getElementById('work-track')
-const workBar = document.getElementById('work-bar')
-const workCurrent = document.getElementById('work-current')
-const projects = track.querySelectorAll('.project')
-const sideways = matchMedia('(min-width: 761px)')
-
-function sizeWork() {
-  if (!sideways.matches) { work.style.height = ''; return }
-  // tall enough that scrolling down covers the whole width of the track
-  const distance = track.scrollWidth - innerWidth
-  work.style.height = innerHeight + distance + 'px'
-}
-
-
 // ---- everything that runs on scroll ----
 const timeline = document.getElementById('timeline')
 const hero = document.querySelector('.hero')
@@ -471,16 +455,6 @@ function onScroll() {
   const lit = Math.floor(clamp((vh * 0.8 - s.top) / (s.height + vh * 0.25), 0, 1) * words.length * 1.05)
   words.forEach((w, i) => w.classList.toggle('on', i < lit))
 
-  // sideways project track
-  if (sideways.matches) {
-    const box = work.getBoundingClientRect()
-    const distance = track.scrollWidth - innerWidth
-    const p = clamp(-box.top / (box.height - vh), 0, 1)
-    track.style.transform = `translateX(${-p * distance}px)`
-    workBar.style.width = p * 100 + '%'
-    workCurrent.textContent = String(Math.min(projects.length, Math.floor(p * projects.length) + 1)).padStart(2, '0')
-  }
-
   // timeline line
   const t = timeline.getBoundingClientRect()
   timeline.style.setProperty('--p', clamp((vh * 0.6 - t.top) / t.height, 0, 1))
@@ -498,9 +472,8 @@ window.addEventListener('scroll', () => {
   requestAnimationFrame(() => { onScroll(); ticking = false })
 }, { passive: true })
 // link sizes change with the window and once the font loads, so the nav bar needs re-measuring
-const refreshLayout = () => { sizeWork(); onScroll(); moveNavBar(nav.querySelector('a.active')) }
+const refreshLayout = () => { onScroll(); moveNavBar(nav.querySelector('a.active')) }
 window.addEventListener('resize', refreshLayout)
-sizeWork()
 onScroll()
 fontsReady.then(refreshLayout)
 
@@ -625,14 +598,14 @@ if (finePointer && !reduceMotion) {
     }
   })
 
-  // project cards tilt toward the mouse
-  projects.forEach(card => {
+  // project cards tilt toward the mouse, just a little
+  document.querySelectorAll('.project').forEach(card => {
     card.addEventListener('mousemove', e => {
       const box = card.getBoundingClientRect()
       const x = (e.clientX - box.left) / box.width - 0.5
       const y = (e.clientY - box.top) / box.height - 0.5
       card.classList.add('tilting')
-      card.style.transform = `perspective(900px) rotateX(${-y * 8}deg) rotateY(${x * 10}deg)`
+      card.style.transform = `perspective(900px) rotateX(${-y * 3}deg) rotateY(${x * 4}deg)`
     })
     card.addEventListener('mouseleave', () => {
       card.classList.remove('tilting')
@@ -736,13 +709,7 @@ function secret() {
 
 
 // ---- pause the mockup shimmer while the projects aren't on screen ----
+const work = document.getElementById('work')
 new IntersectionObserver(([entry]) => {
   work.classList.toggle('on-screen', entry.isIntersecting)
 }).observe(work)
-
-
-// project links without a real address yet: not clickable, and skipped when tabbing through the page
-document.querySelectorAll('.project-links a[href="#"]').forEach(a => {
-  a.setAttribute('aria-disabled', 'true')
-  a.tabIndex = -1
-})

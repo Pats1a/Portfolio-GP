@@ -16,7 +16,7 @@ npx http-server -p 5173
 - `style.css` - the styling
 - `js/i18n.js` - the EN / GE switch and all the Georgian text
 - `js/dots.js` - the dot grid in the hero that reacts to the mouse
-- `js/main.js` - theme switch, animations, sideways project scroll, cursor, contact form
+- `js/main.js` - theme switch, animations, scroll effects, cursor, contact form
 - `404.html` - shown for addresses that don't exist (self-contained on purpose)
 - `favicon.svg`, `apple-touch-icon.png` - browser tab and phone home screen icons
 - `og-image.png` - the preview picture when the link is shared (1200x630)
@@ -42,7 +42,7 @@ All three compress the files automatically, so there's no need to minify anythin
 
 ## todo
 
-- [ ] swap the "open slot" project cards for real projects as they come in (text is in `index.html` and `js/i18n.js`)
+- [ ] add real projects next to "This website" as they come in (copy the first card, text goes in `index.html` and `js/i18n.js`)
 - [ ] add the first job to "My path" when it happens
 - [ ] maybe a real form service (Formspree or similar) so messages arrive without opening an email app
 
