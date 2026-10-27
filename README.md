@@ -42,8 +42,8 @@ All three compress the files automatically, so there's no need to minify anythin
 
 ## todo
 
-- [ ] real projects: name, short description, screenshot, live link, code link
-      (links that are still `#` show up dimmed and can't be clicked, so it never looks broken)
-- [ ] real job / school names instead of "Company Name" and "University Name" (also in `js/i18n.js` for Georgian)
-- [ ] check the numbers in the about section (years, projects, clients)
+- [ ] swap the "open slot" project cards for real projects as they come in (text is in `index.html` and `js/i18n.js`)
+- [ ] add the first job to "My path" when it happens
 - [ ] maybe a real form service (Formspree or similar) so messages arrive without opening an email app
+
+"Years of coding" in the about section counts itself from 2022, no need to update it.

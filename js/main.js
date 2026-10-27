@@ -117,54 +117,8 @@ function startHero() {
   if (started) return
   started = true
   requestAnimationFrame(() => html.classList.add('ready'))
-  setTimeout(typeCode, reduceMotion ? 0 : 1300)
 }
 
-
-// ---- the code window in the hero types itself out ----
-const codeLines = [
-  [['const ', 'pun'], ['giorgi', 'key'], [' = {', 'pun']],
-  [['  role: '], ["'Web Developer'", 'str'], [',', 'pun']],
-  [['  based: '], ["'Tbilisi, Georgia'", 'str'], [',', 'pun']],
-  [['  stack: ['], ["'HTML', 'CSS', 'JavaScript', 'React'", 'str'], ['],', 'pun']],
-  [['  coffee: '], ['Infinity', 'val'], [',', 'pun']],
-  [['  available: '], ['true', 'val'], [',', 'pun']],
-  [['}', 'pun']],
-]
-
-function typeCode() {
-  const code = document.getElementById('code')
-  // turn the lines into one list of pieces, with a newline piece between lines
-  const pieces = []
-  codeLines.forEach((line, i) => {
-    line.forEach(([text, kind]) => pieces.push({ text, kind }))
-    if (i < codeLines.length - 1) pieces.push({ text: '\n' })
-  })
-
-  if (reduceMotion) {
-    pieces.forEach(p => addPiece(code, p).textContent = p.text)
-    return
-  }
-
-  let piece = 0, char = 0, span = null
-  const step = () => {
-    if (piece >= pieces.length) return
-    const p = pieces[piece]
-    if (char == 0) span = addPiece(code, p)
-    span.textContent += p.text[char++]
-    if (char >= p.text.length) { piece++; char = 0 }
-    // short pause at the end of each line, like someone actually typing
-    setTimeout(step, p.text == '\n' ? 160 : 22 + Math.random() * 40)
-  }
-  step()
-}
-
-function addPiece(code, p) {
-  const span = document.createElement('span')
-  if (p.kind) span.className = 'tk-' + p.kind
-  code.append(span)
-  return span
-}
 
 if (reduceMotion || html.classList.contains('seen')) {
   curtain.remove()
@@ -385,12 +339,12 @@ document.addEventListener('keydown', e => {
 
 
 // ---- count up ----
-function countUp(el, target, { decimals = 0, unit = '', duration = 1600 } = {}) {
+function countUp(el, target, { from = 0, decimals = 0, unit = '', duration = 1600 } = {}) {
   if (reduceMotion) { el.innerHTML = target.toFixed(decimals) + unit; return }
   const start = performance.now()
   const step = now => {
     const t = Math.min(1, (now - start) / duration)
-    el.innerHTML = (target * easeOut(t)).toFixed(decimals) + unit
+    el.innerHTML = (from + (target - from) * easeOut(t)).toFixed(decimals) + unit
     if (t < 1) requestAnimationFrame(step)
   }
   requestAnimationFrame(step)
@@ -428,6 +382,10 @@ function showLiveNumbers() {
 }
 
 
+// years of coding, counted from 2022 so it never goes out of date
+const years = document.getElementById('years')
+years.dataset.count = years.textContent = new Date().getFullYear() - 2022
+
 // ---- reveal on scroll ----
 const revealItems = document.querySelectorAll('.tldr-grid li, .big-title, .about-text, .stat, .service, .skill, .step, .live div, .contact-lead, .email-big, .socials, .form, .live-intro')
 revealItems.forEach((el, i) => {
@@ -446,7 +404,7 @@ const observer = new IntersectionObserver(entries => {
 
     if (el.classList.contains('stat')) {
       const strong = el.querySelector('strong')
-      countUp(strong, +strong.dataset.count)
+      if (strong.dataset.count) countUp(strong, +strong.dataset.count, { from: +strong.dataset.from || 0 })
     }
     if (el.parentElement.classList.contains('live')) {
       document.readyState == 'complete' ? showLiveNumbers() : window.addEventListener('load', showLiveNumbers)
@@ -488,7 +446,7 @@ const timeline = document.getElementById('timeline')
 const hero = document.querySelector('.hero')
 const toTop = document.getElementById('to-top')
 const toTopFill = document.getElementById('to-top-fill')
-const bgGrid = document.getElementById('bg-grid')
+const scrollCue = document.querySelector('.scroll-cue')
 
 function onScroll() {
   const y = scrollY
@@ -501,8 +459,7 @@ function onScroll() {
   toTop.classList.toggle('show', y > 600)
   toTopFill.style.height = pageProgress * 100 + '%'
 
-  // background grid drifts up slower than the page. it repeats every 64px so it can wrap around
-  if (!reduceMotion) bgGrid.style.transform = `translate3d(0, ${-(y * 0.25 % 64)}px, 0)`
+  scrollCue.classList.toggle('gone', y > 80)
 
   // "PATSIA" fills in red one letter at a time over the first half of the hero
   const surnameLetters = heroName.querySelectorAll('.outline .l') // rebuilt when the language changes

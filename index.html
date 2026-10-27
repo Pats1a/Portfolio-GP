@@ -28,8 +28,8 @@
   <!-- without javascript: skip the intro, show everything, stack the projects -->
   <noscript>
     <style>
-      .curtain, .lang-btn, .theme-btn, .code-window, .cursor, .hero-links > span:last-child { display: none !important; }
-      .hero-meta, .hero-intro, .hero-actions, .scroll-cue { opacity: 1 !important; translate: 0 0 !important; }
+      .curtain, .lang-btn, .theme-btn, .cursor, .hero-where { display: none !important; }
+      .hero-meta, .hero-intro, .hero-actions, .hero-links, .scroll-cue { opacity: 1 !important; translate: 0 0 !important; }
       .work { height: auto !important; padding: 90px 0; }
       .work-sticky { position: static; height: auto; overflow: visible; }
       .work-track { flex-wrap: wrap; }
@@ -58,20 +58,10 @@
 <div class="progress" id="progress"></div>
 <div class="cursor" id="cursor"></div>
 
-<!-- the background behind everything: a grid that drifts as you scroll, red light that follows the mouse,
-     and a few streaks running along the grid lines -->
+<!-- the background behind everything: two slow red clouds and a soft light that follows the mouse -->
 <div class="bg" aria-hidden="true">
   <div class="bg-glow"></div>
   <div class="bg-glow two"></div>
-  <div class="bg-grid" id="bg-grid">
-    <i></i>
-    <i></i>
-    <i></i>
-    <i></i>
-    <i></i>
-    <b></b>
-    <b></b>
-  </div>
   <div class="bg-light" id="bg-light"></div>
 </div>
 
@@ -83,7 +73,7 @@
     <a href="#services" data-i18n="nav.services">Services</a>
     <a href="#work" data-i18n="nav.work">Work</a>
     <a href="#skills" data-i18n="nav.skills">Skills</a>
-    <a href="#experience" data-i18n="nav.experience">Experience</a>
+    <a href="#experience" data-i18n="nav.experience">My path</a>
     <a href="#contact" data-i18n="nav.contact">Contact</a>
   </nav>
 
@@ -112,17 +102,7 @@
   <div class="hero-inner">
     <div class="hero-meta">
       <span class="tag"><i class="pulse"></i><span data-i18n="hero.tag">Available for freelance</span></span>
-      <span class="hero-links mono">
-        <a class="social-btn" href="https://github.com/Pats1a" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.3 4.4 18.3 4.7 18.3 4.7c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>
-          GitHub
-        </a>
-        <a class="social-btn" href="https://www.linkedin.com/in/giorgi-patsia-95bb5a397/" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 20.5h-3.6v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.3V9h3.4v1.6c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.2zM5.3 7.4a2.1 2.1 0 1 1 0-4.2 2.1 2.1 0 0 1 0 4.2zM7.1 20.5H3.5V9h3.6v11.5zM22.2 0H1.8C.8 0 0 .8 0 1.7v20.6c0 .9.8 1.7 1.8 1.7h20.4c1 0 1.8-.8 1.8-1.7V1.7C24 .8 23.2 0 22.2 0z"/></svg>
-          LinkedIn
-        </a>
-        <span><span data-i18n="hero.city">Tbilisi</span> · <span id="clock">--:--</span> · <span id="status"></span></span>
-      </span>
+      <span class="hero-where mono"><span data-i18n="hero.city">Tbilisi</span> · <span id="clock">--:--</span> · <span id="status"></span></span>
     </div>
 
     <h1 class="hero-name">
@@ -134,25 +114,34 @@
     <div class="hero-bottom">
       <div class="hero-left">
         <p class="hero-intro" data-i18n="hero.intro">
-          I build fast, clean websites and React apps. Small details included.
+          I build fast, clean websites and React apps, and I sweat the small details.
         </p>
         <div class="hero-actions">
-          <a href="#work" class="btn btn-red magnetic"><span data-text="See my work" data-i18n="hero.work">See my work</span></a>
-          <a href="#contact" class="btn btn-line magnetic"><span data-text="Say hello" data-i18n="hero.hello">Say hello</span></a>
+          <a href="#work" class="btn btn-big btn-red magnetic"><span data-text="See my work" data-i18n="hero.work">See my work</span></a>
+          <a href="#contact" class="btn btn-big btn-line magnetic"><span data-text="Message me" data-i18n="hero.hello">Message me</span></a>
         </div>
       </div>
 
-      <div class="code-window" aria-hidden="true">
-        <div class="code-bar">
-          <i></i><i></i><i></i>
-          <span class="mono">giorgi.js</span>
-        </div>
-        <pre class="mono"><code id="code"></code><span class="caret"></span></pre>
+      <!-- big github / linkedin cards where the code window used to be -->
+      <div class="hero-links">
+        <a class="social-card" href="https://github.com/Pats1a" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.3 4.4 18.3 4.7 18.3 4.7c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>
+          <span><b>GitHub</b><small class="mono">@Pats1a</small></span>
+          <i aria-hidden="true">↗</i>
+        </a>
+        <a class="social-card" href="https://www.linkedin.com/in/giorgi-patsia-95bb5a397/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 20.5h-3.6v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.7H9.3V9h3.4v1.6c.5-.9 1.6-1.8 3.4-1.8 3.6 0 4.3 2.4 4.3 5.5v6.2zM5.3 7.4a2.1 2.1 0 1 1 0-4.2 2.1 2.1 0 0 1 0 4.2zM7.1 20.5H3.5V9h3.6v11.5zM22.2 0H1.8C.8 0 0 .8 0 1.7v20.6c0 .9.8 1.7 1.8 1.7h20.4c1 0 1.8-.8 1.8-1.7V1.7C24 .8 23.2 0 22.2 0z"/></svg>
+          <span><b>LinkedIn</b><small class="mono">Giorgi Patsia</small></span>
+          <i aria-hidden="true">↗</i>
+        </a>
       </div>
     </div>
   </div>
 
-  <a href="#tldr" class="scroll-cue mono" aria-label="Scroll down"><span data-i18n="hero.scroll">Scroll</span> <i></i></a>
+  <a href="#tldr" class="scroll-cue" aria-label="Scroll down">
+    <span class="mouse" aria-hidden="true"><i></i></span>
+    <span class="mono" data-i18n="hero.scroll">Scroll to explore</span>
+  </a>
 </section>
 
 
@@ -161,7 +150,7 @@
   <div class="container">
     <p class="label mono"><span>TL;DR</span><b data-i18n="tldr.label">The 10 second version</b></p>
     <ul class="tldr-grid">
-      <li><span class="mono" data-i18n="tldr.1.k">What I do</span><strong data-i18n="tldr.1.v">Websites and React apps</strong></li>
+      <li><span class="mono" data-i18n="tldr.1.k">What I do</span><strong data-i18n="tldr.1.v">Front-end, plus basic back-end</strong></li>
       <li><span class="mono" data-i18n="tldr.2.k">Where</span><strong data-i18n="tldr.2.v">Tbilisi, works remote</strong></li>
       <li><span class="mono" data-i18n="tldr.3.k">Replies</span><strong data-i18n="tldr.3.v">Within 24 hours</strong></li>
       <li class="tldr-cta">
@@ -179,22 +168,24 @@
     <p class="label mono"><span>01</span><b data-i18n="about.label">About</b></p>
 
     <p class="statement" id="statement" data-i18n="about.statement">
-      I make <em>fast</em>, clean websites that people actually <em>enjoy</em> using.
-      Started out curious, still am.
+      I wrote my first line of code in 2022 with zero experience. Today I build things
+      I once thought were <em>impossible</em>, and I'm only getting <em>started</em>.
     </p>
 
     <div class="about-grid">
       <div class="stats">
-        <div class="stat"><strong data-count="3">3</strong><span data-i18n="about.stat1">Years of coding</span></div>
-        <div class="stat"><strong data-count="20">20</strong><span data-i18n="about.stat2">Projects finished</span></div>
-        <div class="stat"><strong data-count="10">10</strong><span data-i18n="about.stat3">Happy clients</span></div>
+        <div class="stat"><strong data-count="2022" data-from="1990">2022</strong><span data-i18n="about.stat1">Wrote my first code</span></div>
+        <div class="stat"><strong id="years" data-count="4">4</strong><span data-i18n="about.stat2">Years of coding</span></div>
+        <div class="stat"><strong>∞</strong><span data-i18n="about.stat3">Things left to learn</span></div>
       </div>
       <div class="about-text">
         <p data-i18n="about.p1">
-          Everything I build is <mark>front-end</mark>: HTML, CSS, JavaScript, and <mark>React</mark> for the bigger stuff.
+          Mostly self-taught. I build the <mark>front-end</mark> with HTML, CSS, JavaScript and <mark>React</mark>,
+          and I can handle the basic back-end too.
         </p>
         <p data-i18n="about.p2">
-          Off the clock I'm learning something new or walking around Tbilisi with headphones on.
+          Right now I'm studying IT and Computer Science and looking for my first real projects.
+          Give me one and I'll put everything into it.
         </p>
       </div>
     </div>
@@ -218,7 +209,7 @@
       <article class="service">
         <span class="service-num mono">02</span>
         <h3 data-i18n="services.app.title">Web apps</h3>
-        <p data-i18n="services.app.text">React apps: dashboards, tools, anything bigger than a static page.</p>
+        <p data-i18n="services.app.text">React apps with a simple back-end when needed. Dashboards, tools, anything bigger than a static page.</p>
         <ul class="mono"><li data-i18n="services.app.1">Dashboards</li><li data-i18n="services.app.2">Interactive tools</li><li data-i18n="services.app.3">Single page apps</li></ul>
         <a href="#contact" class="service-link"><span data-i18n="services.start">Start a project</span> <span>→</span></a>
       </article>
@@ -237,11 +228,27 @@
 <section id="work" class="work">
   <div class="work-sticky">
     <div class="container work-head">
-      <p class="label mono"><span>03</span><b data-i18n="work.label">Selected work</b></p>
+      <p class="label mono"><span>03</span><b data-i18n="work.label">Work</b></p>
       <p class="mono work-count"><span id="work-current">01</span> / 04</p>
     </div>
 
     <div class="work-track" id="work-track">
+      <article class="project">
+        <div class="project-img">
+          <div class="mock"><div class="mock-bar"><i></i><i></i><i></i></div><div class="mock-body site">
+            <b class="hero accent"></b><b class="line w70"></b><b class="line w40"></b>
+            <div class="row3"><b></b><b class="accent"></b><b></b></div>
+          </div></div>
+          <span class="project-num">01</span>
+        </div>
+        <div class="project-info">
+          <h3 data-i18n="work.1.title">This website</h3>
+          <p data-i18n="work.1.text">My portfolio, built from scratch. No templates, no frameworks, every animation written by hand.</p>
+          <ul class="chips"><li>HTML</li><li>CSS</li><li>JavaScript</li></ul>
+          <div class="project-links"><a href="https://github.com/Pats1a/Portfolio-GP" target="_blank" rel="noopener" data-i18n="work.code">Code ↗</a></div>
+        </div>
+      </article>
+
       <article class="project">
         <div class="project-img">
           <div class="mock"><div class="mock-bar"><i></i><i></i><i></i></div><div class="mock-body board">
@@ -249,48 +256,13 @@
             <div><b class="h"></b><b class="accent"></b><b></b></div>
             <div><b class="h"></b><b></b><b></b><b class="accent"></b><b></b></div>
           </div></div>
-          <span class="project-num">01</span>
-        </div>
-        <div class="project-info">
-          <h3 data-i18n="work.1.title">Project One</h3>
-          <p data-i18n="work.1.text">A task board for small teams. Everyone sees changes the second they happen.</p>
-          <ul class="chips"><li>React</li><li>CSS</li></ul>
-          <div class="project-links"><a href="#" data-i18n="work.live">Live site ↗</a><a href="#" data-i18n="work.code">Code ↗</a></div>
-        </div>
-      </article>
-
-      <article class="project">
-        <div class="project-img">
-          <div class="mock"><div class="mock-bar"><i></i><i></i><i></i></div><div class="mock-body site">
-            <b class="hero accent"></b><b class="line w70"></b><b class="line w40"></b>
-            <div class="row3"><b></b><b class="accent"></b><b></b></div>
-          </div></div>
           <span class="project-num">02</span>
         </div>
         <div class="project-info">
-          <h3 data-i18n="work.2.title">Project Two</h3>
-          <p data-i18n="work.2.text">Website for a local bakery with the menu, opening hours and online orders.</p>
-          <ul class="chips"><li>HTML</li><li>CSS</li><li>JavaScript</li></ul>
-          <div class="project-links"><a href="#" data-i18n="work.live">Live site ↗</a></div>
-        </div>
-      </article>
-
-      <article class="project">
-        <div class="project-img">
-          <div class="mock"><div class="mock-bar"><i></i><i></i><i></i></div><div class="mock-body tool">
-            <div class="panel"><b class="line w60"></b>
-              <div class="toggle"><b class="line"></b><b class="switch accent"></b></div>
-              <div class="toggle"><b class="line"></b><b class="switch"></b></div>
-              <div class="toggle"><b class="line"></b><b class="switch accent"></b></div>
-            </div>
-          </div></div>
-          <span class="project-num">03</span>
-        </div>
-        <div class="project-info">
-          <h3 data-i18n="work.3.title">Project Three</h3>
-          <p data-i18n="work.3.text">A small browser tool that does the boring, repetitive parts of my day for me.</p>
-          <ul class="chips"><li>JavaScript</li></ul>
-          <div class="project-links"><a href="#" data-i18n="work.code">Code ↗</a></div>
+          <h3 data-i18n="work.2.title">Your web app</h3>
+          <p data-i18n="work.2.text">A dashboard, a tool, anything interactive. This spot is waiting for it.</p>
+          <ul class="chips"><li class="open" data-i18n="work.open">Open slot</li></ul>
+          <div class="project-links"><a href="#contact" data-i18n="work.claim">Let's build it →</a></div>
         </div>
       </article>
 
@@ -304,13 +276,32 @@
             <div><b class="pic accent"></b><b class="line w60"></b></div>
             <div><b class="pic"></b><b class="line w40"></b></div>
           </div></div>
+          <span class="project-num">03</span>
+        </div>
+        <div class="project-info">
+          <h3 data-i18n="work.3.title">Your online shop</h3>
+          <p data-i18n="work.3.text">Products, cart, checkout. Fast and simple to use.</p>
+          <ul class="chips"><li class="open" data-i18n="work.open">Open slot</li></ul>
+          <div class="project-links"><a href="#contact" data-i18n="work.claim">Let's build it →</a></div>
+        </div>
+      </article>
+
+      <article class="project">
+        <div class="project-img">
+          <div class="mock"><div class="mock-bar"><i></i><i></i><i></i></div><div class="mock-body tool">
+            <div class="panel"><b class="line w60"></b>
+              <div class="toggle"><b class="line"></b><b class="switch accent"></b></div>
+              <div class="toggle"><b class="line"></b><b class="switch"></b></div>
+              <div class="toggle"><b class="line"></b><b class="switch accent"></b></div>
+            </div>
+          </div></div>
           <span class="project-num">04</span>
         </div>
         <div class="project-info">
-          <h3 data-i18n="work.4.title">Project Four</h3>
-          <p data-i18n="work.4.text">Online shop with a cart, product filters and a smooth checkout flow.</p>
-          <ul class="chips"><li>React</li><li>JavaScript</li></ul>
-          <div class="project-links"><a href="#" data-i18n="work.live">Live site ↗</a><a href="#" data-i18n="work.code">Code ↗</a></div>
+          <h3 data-i18n="work.4.title">Your idea</h3>
+          <p data-i18n="work.4.text">Something nobody has built yet? Even better. Let's figure it out together.</p>
+          <ul class="chips"><li class="open" data-i18n="work.open">Open slot</li></ul>
+          <div class="project-links"><a href="#contact" data-i18n="work.claim">Let's build it →</a></div>
         </div>
       </article>
     </div>
@@ -370,31 +361,31 @@
 
 <section id="experience" class="section">
   <div class="container">
-    <p class="label mono"><span>06</span><b data-i18n="exp.label">Experience</b></p>
+    <p class="label mono"><span>06</span><b data-i18n="exp.label">My path</b></p>
 
     <ol class="timeline" id="timeline">
       <li class="job">
-        <span class="mono when" data-i18n="exp.now">2024 – now</span>
+        <span class="mono when" data-i18n="exp.next">Next</span>
         <div>
-          <h3 data-i18n="exp.1.title">Front-end Developer</h3>
-          <p class="where" data-i18n="exp.1.where">Company Name</p>
-          <p data-i18n="exp.1.text">Building and looking after web apps that customers use every day.</p>
+          <h3 data-i18n="exp.1.title">My first job</h3>
+          <p class="where" data-i18n="exp.1.where">Maybe with you</p>
+          <p data-i18n="exp.1.text">No work experience yet, which means I'm hungry to prove myself. You'd get all of my energy.</p>
         </div>
       </li>
       <li class="job">
-        <span class="mono when">2023 – 2024</span>
+        <span class="mono when">2024 – 2028</span>
         <div>
-          <h3 data-i18n="exp.2.title">Freelance Web Developer</h3>
-          <p class="where" data-i18n="exp.2.where">Self-employed</p>
-          <p data-i18n="exp.2.text">Websites and online shops for small businesses around Georgia.</p>
+          <h3 data-i18n="exp.2.title">Information Technology / Computer Science</h3>
+          <p class="where" data-i18n="exp.2.where">Georgian-American University</p>
+          <p data-i18n="exp.2.text">Bachelor's degree, studying right now. Theory by day, my own projects by night.</p>
         </div>
       </li>
       <li class="job">
-        <span class="mono when">2021 – 2023</span>
+        <span class="mono when">2022 – 2023</span>
         <div>
-          <h3 data-i18n="exp.3.title">Computer Science</h3>
-          <p class="where" data-i18n="exp.3.where">University Name</p>
-          <p data-i18n="exp.3.text">Algorithms, data structures and a lot of late nights.</p>
+          <h3 data-i18n="exp.3.title">Front-end React Developer course</h3>
+          <p class="where">Digital Institute</p>
+          <p data-i18n="exp.3.text">Where it all started. The course gave me the basics, the rest I taught myself by building things, breaking them and fixing them.</p>
         </div>
       </li>
     </ol>
