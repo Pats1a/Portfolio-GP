@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page not found · Giorgi Patsia</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400&family=Noto+Sans+Georgian:wght@400..700&display=swap" rel="stylesheet">
+
+  <!-- this page can show up at any address, so everything it needs is right here instead of in style.css -->
+  <style>
+    :root { --bg: #000; --text: #f4efef; --muted: #a39696; --line: #2a0505; --red: #FF0000; --on-red: #000; }
+    [data-theme="light"] { --bg: #fff; --text: #000; --muted: #5d5d66; --line: #e2e2e7; }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: "Archivo", "Noto Sans Georgian", system-ui, sans-serif;
+      color: var(--text);
+      background-color: var(--bg);
+      background-image: radial-gradient(circle, var(--line) 1.2px, transparent 1.6px);
+      background-size: 30px 30px;
+      text-align: center;
+      -webkit-font-smoothing: antialiased;
+    }
+    .num {
+      font-size: clamp(120px, 34vw, 340px);
+      font-weight: 900;
+      font-stretch: 125%;
+      line-height: .85;
+      letter-spacing: -.05em;
+      color: transparent;
+      -webkit-text-stroke: 2px var(--red);
+      animation: drop 1s cubic-bezier(.22, 1, .36, 1) both;
+    }
+    .num span { display: inline-block; animation: wobble 3s ease-in-out infinite 1s; }
+    .num span:nth-child(2) { animation-delay: 1.2s; color: var(--red); }
+    .num span:nth-child(3) { animation-delay: 1.4s; }
+    h1 { margin: 26px 0 10px; font-size: clamp(26px, 5vw, 44px); font-weight: 800; font-stretch: 125%; letter-spacing: -.02em; }
+    p { margin: 0 auto 6px; max-width: 30em; color: var(--muted); font-size: 18px; line-height: 1.6; }
+    .ka { font-size: 16px; margin-bottom: 34px; }
+    a {
+      display: inline-block;
+      padding: 15px 28px;
+      border-radius: 999px;
+      background: var(--red);
+      color: var(--on-red);
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform .3s cubic-bezier(.22, 1, .36, 1);
+    }
+    a:hover { transform: translateY(-3px); }
+    a:focus-visible { outline: 2px solid var(--red); outline-offset: 4px; }
+    .mono { margin-top: 30px; font: 13px "JetBrains Mono", monospace; color: var(--muted); }
+    @keyframes drop { from { opacity: 0; transform: translateY(-40px); } }
+    @keyframes wobble { 50% { transform: translateY(-10px) rotate(-3deg); } }
+    @media (prefers-reduced-motion: reduce) { .num, .num span { animation: none; } }
+  </style>
+  <script>
+    try { if (localStorage.theme) document.documentElement.dataset.theme = localStorage.theme } catch (e) {}
+  </script>
+</head>
+<body>
+  <main>
+    <div class="num" aria-hidden="true"><span>4</span><span>0</span><span>4</span></div>
+    <h1>This page wandered off</h1>
+    <p>The link might be old or mistyped. Everything else is still where it should be.</p>
+    <p class="ka" lang="ka">ეს გვერდი ვერ მოიძებნა. დაბრუნდით მთავარ გვერდზე.</p>
+    <a href="/">Back to the homepage</a>
+    <p class="mono">error 404 · giorgi patsia</p>
+  </main>
+</body>
+</html>
