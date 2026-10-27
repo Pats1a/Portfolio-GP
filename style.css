@@ -1018,49 +1018,9 @@ mark {
   .logo { font-size: 19px; }
 }
 
-/* ---- language switch: squares ripple out from the button, cover the page, then clear ---- */
-.lang-tiles {
-  position: fixed;
-  inset: 0;
-  z-index: 360;
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 12), 1fr);
-  grid-auto-rows: 1fr;
-  pointer-events: none;
-}
-.lang-tiles.in { pointer-events: all; } /* nothing clickable while it's covered */
-.lang-tiles i {
-  background: var(--red);
-  transform: scale(0) rotate(-90deg);
-  transition: transform .42s cubic-bezier(.65, 0, .35, 1);
-  transition-delay: var(--d);
-}
-/* a few darker squares so it doesn't look like one flat sheet */
-.lang-tiles i.dark { background: var(--red-2); }
-.lang-tiles i.darker { background: var(--red-3); }
-.lang-tiles.in i { transform: scale(1.06) rotate(0); } /* 1.06 hides the hairline gaps between squares */
-.lang-tiles.out i { transform: scale(0) rotate(90deg); }
-
-/* the new language's name, punched in over the squares */
-.lang-word {
-  position: fixed;
-  inset: 0;
-  z-index: 361;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  font-size: clamp(56px, 14vw, 210px);
-  font-weight: 900;
-  font-stretch: var(--wide);
-  letter-spacing: -.03em;
-  color: var(--on-red);
-  opacity: 0;
-  transform: scale(1.3);
-  filter: blur(10px);
-  transition: opacity .3s, transform .5s var(--ease), filter .3s;
-}
-.lang-word.show { opacity: 1; transform: none; filter: none; }
-.lang-word.gone { opacity: 0; transform: scale(.8); filter: blur(6px); transition-duration: .25s; }
+/* ---- language switch: red paint, drawn in js ---- */
+.lang-liquid { position: fixed; inset: 0; z-index: 360; width: 100%; height: 100%; display: none; }
+.lang-liquid.on { display: block; } /* and while it is up, nothing underneath can be clicked */
 
 /* during the swap the split headings wait below their masks, then rise in */
 .relang .hero-name .l, .relang .talk .l, .relang .big-title .line > span {
@@ -1223,8 +1183,15 @@ kbd {
 }
 
 
-/* theme switch: the new theme wipes down from the top (js runs it) */
+/* ---- theme switch (js runs the view transition and draws the blinds) ---- */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+
+/* the new icon turns in from below */
+.theme-btn.turn svg { animation: icon-turn .6s var(--ease); }
+@keyframes icon-turn {
+  from { transform: rotate(-120deg) scale(.4); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
 
 
 @media (max-width: 1000px) {
@@ -1380,7 +1347,8 @@ kbd {
   .hero-meta, .hero-intro, .hero-actions, .hero-links, .scroll-cue, .reveal { opacity: 1; translate: 0 0; transform: none; transition: none; }
   .pulse::after, .mouse i, body::after { animation: none; }
   .service, .to-top i, mark { transition: none; }
-  .curtain, .lang-tiles, .lang-word { display: none; }
+  .curtain, .lang-liquid { display: none; }
+  .theme-btn.turn svg, .lang-btn.pop { animation: none; }
   .mock b, .hire-btn::after { animation: none; }
   .hero-name.glitch .row { animation: none; }
   .statement, .talk, .big-title.reveal.in { transform: none; }

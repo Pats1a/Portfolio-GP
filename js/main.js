@@ -16,7 +16,8 @@ const fontsReady = new Promise(resolve => {
 
 
 // ---- theme ----
-// the new theme wipes down from the top, in browsers that support view transitions
+// the new theme comes down over the page in vertical strips, one after another,
+// starting from the side the button is on, like blinds being let down (browsers with view transitions)
 const themeBtn = document.getElementById('theme-btn')
 
 function updateThemeBtn() {
@@ -32,11 +33,31 @@ function flipTheme() {
   window.dispatchEvent(new Event('themechange'))
 }
 
+// one clip-path shape made of all the strips, each one pulled down as far as it's got by time t (0 to 1).
+// a polygon can't have gaps, so it runs along the top edge between strips, which has no height
+const STRIPS = 10
+const easeInOut = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+function blinds(t, fromRight) {
+  const w = innerWidth / STRIPS
+  const points = []
+  for (let i = 0; i < STRIPS; i++) {
+    const order = fromRight ? STRIPS - 1 - i : i
+    const drop = easeInOut(clamp((t - order * 0.05) / 0.55, 0, 1)) * innerHeight
+    const left = i * w, right = (i + 1) * w + 1 // +1 so there's never a hairline between strips
+    points.push(`${left}px 0`, `${left}px ${drop}px`, `${right}px ${drop}px`, `${right}px 0`)
+  }
+  return `polygon(${points.join(', ')})`
+}
+
 let themeSwitching = false
 function switchTheme() {
+  if (themeSwitching || switchingLang) return // one page transition at a time
+  themeBtn.classList.remove('turn')
+  void themeBtn.offsetWidth // restart the icon turning in
+  themeBtn.classList.add('turn')
+
   if (!document.startViewTransition || reduceMotion) return flipTheme()
-  // ignore clicks while a switch is still animating, otherwise a fast double click loses one of them
-  if (themeSwitching) return
+  // clicks during the animation are ignored (the check at the top), otherwise a fast double click loses one
   themeSwitching = true
 
   // the flip runs exactly once, either through the transition or through the backup timer below
@@ -46,20 +67,20 @@ function switchTheme() {
     flipped = true
     flipTheme()
   }
-  const unlock = () => { themeSwitching = false }
+  const done = () => { themeSwitching = false }
 
   const transition = document.startViewTransition(flipOnce)
   transition.ready.then(() => {
-    html.animate(
-      { clipPath: ['inset(0 0 100% 0)', 'inset(0 0 0 0)'] },
-      { duration: 750, easing: 'cubic-bezier(.76, 0, .24, 1)', pseudoElement: '::view-transition-new(root)' },
-    )
+    const box = themeBtn.getBoundingClientRect()
+    const fromRight = box.left > innerWidth / 2
+    const frames = Array.from({ length: 41 }, (_, n) => ({ clipPath: blinds(n / 40, fromRight) }))
+    html.animate(frames, { duration: 1000, easing: 'linear', pseudoElement: '::view-transition-new(root)' })
   }).catch(() => {}) // the browser can skip the animation, the theme still switches
-  transition.finished.catch(() => {}).then(unlock)
+  transition.finished.catch(() => {}).then(done)
 
   // backup: if the browser never gets round to the transition (it can stall in background tabs),
   // switch anyway so the button never ends up doing nothing
-  setTimeout(() => { flipOnce(); unlock() }, 1000)
+  setTimeout(() => { flipOnce(); done() }, 1500)
 }
 themeBtn.addEventListener('click', switchTheme)
 updateThemeBtn()
@@ -241,15 +262,16 @@ wrapStatement()
 
 
 // ---- language switch ----
-// red squares spin and grow out from the language button until they cover the page,
-// the new language's name punches in, the text swaps underneath,
-// then the squares clear in the same ripple and the headings rise back in
+// red paint pours down from the top with drips running ahead of it until it covers the page,
+// the language swaps underneath, then the paint slides off the bottom and the headings rise back in.
+// two coats: a dark one slightly ahead and the bright one on top, so it has some depth
 const langBtn = document.getElementById('lang-btn')
-const tiles = document.getElementById('lang-tiles')
-const langWord = document.getElementById('lang-word')
-const TILE = 80       // roughly how big each square is, in px
-const RIPPLE = 480    // ms from the first square to the last one
-const GROW = 420      // ms each square takes (matches the css)
+const liquid = document.getElementById('lang-liquid')
+const lctx = liquid.getContext('2d')
+const POUR = 450    // ms to cover the page
+const HOLD = 100    // ms fully covered, the swap happens in here
+const DRAIN = 500   // ms to slide off
+const DRIP = 260   // longest a drip can get, in px
 let switchingLang = false
 
 function swapLanguage(next) {
@@ -262,32 +284,78 @@ function swapLanguage(next) {
   tick() // the online / asleep text is translated too
 }
 
-// fresh grid every time so it always matches the window size
-function buildTiles() {
-  const cols = Math.ceil(innerWidth / TILE)
-  const rows = Math.ceil(innerHeight / TILE)
-  tiles.style.setProperty('--cols', cols)
+// drips along the edge, different every time. w is half the width
+function makeDrips() {
+  return Array.from({ length: Math.ceil(innerWidth / 90) }, () => ({
+    x: Math.random() * innerWidth,
+    w: 14 + Math.random() * 34,
+    len: 40 + Math.random() * (DRIP - 40),
+  }))
+}
 
-  // the ripple starts from the language button
-  const btn = langBtn.getBoundingClientRect()
-  const ox = (btn.left + btn.width / 2) / innerWidth * cols
-  const oy = (btn.top + btn.height / 2) / innerHeight * rows
-  const far = Math.hypot(Math.max(ox, cols - ox), Math.max(oy, rows - oy))
-
-  let squares = ''
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const delay = Math.hypot(c + 0.5 - ox, r + 0.5 - oy) / far * RIPPLE
-      const roll = Math.random()
-      const shade = roll < 0.12 ? ' class="darker"' : roll < 0.3 ? ' class="dark"' : ''
-      squares += `<i${shade} style="--d:${delay.toFixed(0)}ms"></i>`
+// one coat of paint. pouring, it hangs from the top and its edge is at `base` with drips below it.
+// draining, it sits on the bottom and its edge is at `base` with trails left above it
+function coat(base, drips, color, wobble, pouring) {
+  const dir = pouring ? 1 : -1
+  const edge = []
+  for (let x = -6; x <= innerWidth + 6; x += 6) {
+    // the surface ripples a little as it moves
+    let y = base + Math.sin(x / 140 + wobble) * 12 + Math.sin(x / 53 + wobble * 1.7) * 5
+    for (const d of drips) {
+      const dx = Math.abs(x - d.x)
+      if (dx >= d.w) continue
+      // a column with a round end
+      const tip = base + dir * (d.len - d.w + Math.sqrt(d.w * d.w - dx * dx))
+      y = pouring ? Math.max(y, tip) : Math.min(y, tip)
     }
+    edge.push([x, y])
   }
-  tiles.innerHTML = squares
+  // soften the corners where the drips leave the edge, so they flow out of it like real paint
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 1; i < edge.length - 1; i++) edge[i][1] = (edge[i - 1][1] + edge[i][1] * 2 + edge[i + 1][1]) / 4
+  }
+
+  const outside = pouring ? -10 : innerHeight + 10
+  const shape = new Path2D()
+  shape.moveTo(-6, outside)
+  for (const [x, y] of edge) shape.lineTo(x, y)
+  shape.lineTo(innerWidth + 6, outside)
+  // deeper colour away from the edge, brighter at the wet edge, so it has some body
+  const shade = lctx.createLinearGradient(0, outside, 0, base)
+  shade.addColorStop(0, color.deep)
+  shade.addColorStop(1, color.edge)
+  lctx.fillStyle = shade
+  lctx.fill(shape)
+
+  // a thin shine just inside the edge makes it look wet
+  lctx.beginPath()
+  for (const [x, y] of edge) lctx.lineTo(x, y - dir * 5)
+  lctx.strokeStyle = 'rgba(255, 255, 255, .2)'
+  lctx.lineWidth = 2
+  lctx.stroke()
+  return shape
+}
+
+// "loading / English" painted onto the bright coat. it's clipped to the paint,
+// so it shows up as the paint covers the middle and rides down with it when it drains
+function paintLabel(shape, y, { caption, word, ink }) {
+  const big = clamp(innerWidth * 0.12, 48, 190)
+  lctx.save()
+  lctx.clip(shape)
+  lctx.fillStyle = ink
+  lctx.textAlign = 'center'
+  lctx.letterSpacing = '0.3em'
+  lctx.font = `500 ${clamp(big * 0.11, 12, 18)}px "JetBrains Mono", "Noto Sans Georgian", monospace`
+  lctx.fillText(caption, innerWidth / 2, y - big * 0.62)
+  lctx.letterSpacing = '0px'
+  lctx.fontStretch = 'expanded'
+  lctx.font = `900 ${big}px "Archivo", "Noto Sans Georgian", sans-serif`
+  lctx.fillText(word, innerWidth / 2, y + big * 0.32)
+  lctx.restore()
 }
 
 function switchLang() {
-  if (switchingLang) return
+  if (switchingLang || themeSwitching) return
   const next = lang == 'en' ? 'ka' : 'en'
 
   langBtn.classList.remove('pop')
@@ -297,36 +365,53 @@ function switchLang() {
   if (reduceMotion) return swapLanguage(next)
   switchingLang = true
 
-  buildTiles()
-  langWord.textContent = next == 'ka' ? 'ქართული' : 'English'
-  langWord.lang = next
-  void tiles.offsetWidth // let the squares exist at scale 0 before growing them
-  tiles.classList.add('in')
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+  liquid.width = innerWidth * dpr
+  liquid.height = innerHeight * dpr
+  lctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  const css = getComputedStyle(html)
+  const red = name => css.getPropertyValue(name).trim()
+  const bright = { deep: red('--red-2'), edge: red('--red') }
+  const dark = { deep: '#3a0000', edge: red('--red-3') }
+  const label = next == 'ka'
+    ? { caption: 'იტვირთება', word: 'ქართული', ink: red('--on-red') }
+    : { caption: 'loading', word: 'English', ink: red('--on-red') }
+  const pourDrips = [makeDrips(), makeDrips()]
+  const drainDrips = [makeDrips(), makeDrips()]
+  const travel = innerHeight + DRIP + 20 // far enough that the drips and ripples are off screen too
+  liquid.classList.add('on')
 
-  // (timers rather than animation frames: frames pause in background tabs)
-  const covered = RIPPLE + GROW
-  setTimeout(() => langWord.classList.add('show'), covered - 150)
+  const start = performance.now()
+  const frame = now => {
+    const t = now - start
+    const wobble = t / 400
+    lctx.clearRect(0, 0, innerWidth, innerHeight)
+    if (t < POUR + HOLD) {
+      // the dark coat leads a little
+      const edge = lead => easeInOut(clamp(t / POUR + lead, 0, 1)) * travel - DRIP
+      coat(edge(0.1), pourDrips[0], dark, wobble, true)
+      paintLabel(coat(edge(0), pourDrips[1], bright, wobble + 1, true), innerHeight / 2, label)
+    } else {
+      // the bright coat leaves first and shows the dark one under it for a moment
+      const edge = lag => easeInOut(clamp((t - POUR - HOLD) / DRAIN - lag, 0, 1)) * travel
+      coat(edge(0.12), drainDrips[0], dark, wobble, false)
+      paintLabel(coat(edge(0), drainDrips[1], bright, wobble + 1, false), innerHeight / 2 + edge(0), label)
+    }
+    if (t < POUR + HOLD + DRAIN * 1.15) requestAnimationFrame(frame)
+  }
+  requestAnimationFrame(frame)
 
-  // swap while the page is covered, headings stay tucked down for now
+  // (timers rather than animation frames for these: frames pause in background tabs)
   setTimeout(() => {
-    html.classList.add('relang')
+    html.classList.add('relang') // split headings wait below their masks
     swapLanguage(next)
-  }, covered + 50)
-
-  // clear: the word goes, the squares spin away, the headings rise
+  }, POUR + 40)
+  setTimeout(() => html.classList.remove('relang'), POUR + HOLD + DRAIN * 0.35)
   setTimeout(() => {
-    langWord.classList.add('gone')
-    tiles.classList.add('out')
-    setTimeout(() => html.classList.remove('relang'), RIPPLE * 0.4)
-  }, covered + 450)
-
-  // tidy up for next time
-  setTimeout(() => {
-    tiles.classList.remove('in', 'out')
-    tiles.innerHTML = ''
-    langWord.classList.remove('show', 'gone')
+    liquid.classList.remove('on')
+    lctx.clearRect(0, 0, innerWidth, innerHeight)
     switchingLang = false
-  }, covered * 2 + 550)
+  }, POUR + HOLD + DRAIN * 1.15 + 60)
 }
 langBtn.addEventListener('click', switchLang)
 
