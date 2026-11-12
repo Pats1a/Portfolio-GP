@@ -150,7 +150,7 @@ if (reduceMotion || html.classList.contains('seen')) {
   const t0 = performance.now()
   const step = now => {
     const t = Math.min(1, (now - t0) / 700)
-    count.textContent = Math.round(easeOut(t) * 100)
+    count.textContent = String(Math.round(easeOut(t) * 100)).padStart(3, '0') // 007, 042, 100
     if (t < 1) return requestAnimationFrame(step)
     // wait for fonts too, so the name doesn't jump when the real font arrives
     Promise.race([fontsReady, new Promise(r => setTimeout(r, 600))]).then(() => {
@@ -440,6 +440,7 @@ function countUp(el, target, { from = 0, decimals = 0, unit = '', duration = 160
 
 // ---- live numbers about this page ----
 let liveDone = false
+let liveOnScreen = false
 function showLiveNumbers() {
   if (liveDone) return
   liveDone = true
@@ -463,9 +464,19 @@ function showLiveNumbers() {
       frames = 0
       last = now
     }
+    if (liveOnScreen) requestAnimationFrame(count)
+    else counting = false
+  }
+  // it only counts while the numbers are on screen, no reason to keep the page busy otherwise
+  let counting = false
+  const start = () => {
+    if (counting || !liveOnScreen) return
+    counting = true
+    frames = 0
+    last = performance.now()
     requestAnimationFrame(count)
   }
-  requestAnimationFrame(count)
+  new IntersectionObserver(([entry]) => { liveOnScreen = entry.isIntersecting; start() }).observe(fps)
 }
 
 
@@ -520,54 +531,83 @@ const toTopFill = document.getElementById('to-top-fill')
 const scrollCue = document.querySelector('.scroll-cue')
 const nameRows = heroName.querySelectorAll('.row')
 
-function onScroll() {
-  const y = scrollY
-  const vh = innerHeight
-  const max = document.documentElement.scrollHeight - vh
-  const pageProgress = max > 0 ? y / max : 0
+// where things sit on the page, measured once and again whenever the layout can change
+// (resize, fonts arriving, language switch). measuring on every scroll frame was the main cause of lag
+let spots = null
+function measure() {
+  const at = el => {
+    const box = el.getBoundingClientRect()
+    return { top: box.top + scrollY, height: box.height }
+  }
+  spots = {
+    hero: hero.offsetHeight,
+    max: document.documentElement.scrollHeight - innerHeight,
+    statement: at(statement),
+    timeline: at(timeline),
+    talk: at(talk),
+  }
+}
 
+// the scroll position, taken from the scroll event (reading it later in a frame can force a layout)
+let scrolled = scrollY
+
+function onScroll() {
+  if (!spots) measure()
+  const y = scrolled
+  const vh = innerHeight
+  const top = spot => spot.top - y // where it is on screen right now
+  const near = spot => top(spot) + spot.height > -vh * 0.5 && top(spot) < vh * 1.5 // no point updating far off screen
+
+  const pageProgress = spots.max > 0 ? clamp(y / spots.max, 0, 1) : 0
   header.classList.toggle('scrolled', y > 30)
   progress.style.transform = `scaleX(${pageProgress})`
   toTop.classList.toggle('show', y > 600)
-  toTopFill.style.height = pageProgress * 100 + '%'
-
+  toTopFill.style.transform = `scaleY(${pageProgress})`
   scrollCue.classList.toggle('gone', y > 80)
 
-  // the two halves of the name pull apart as the hero scrolls away
-  if (!reduceMotion) {
-    const apart = clamp(y / hero.offsetHeight, 0, 1)
-    nameRows[0].style.translate = `${-apart * 14}vw 0`
-    nameRows[1].style.translate = `${apart * 14}vw 0`
+  if (y < spots.hero * 1.5) {
+    // the two halves of the name pull apart as the hero scrolls away
+    if (!reduceMotion) {
+      const apart = clamp(y / spots.hero, 0, 1)
+      nameRows[0].style.translate = `${-apart * 14}vw 0`
+      nameRows[1].style.translate = `${apart * 14}vw 0`
+    }
+    // "PATSIA" fills in red one letter at a time over the first half of the hero
+    const surnameLetters = heroName.querySelectorAll('.outline .l') // rebuilt when the language changes
+    const filled = Math.round(clamp(y / (spots.hero * 0.45), 0, 1) * surnameLetters.length)
+    surnameLetters.forEach((l, i) => l.classList.toggle('filled', i < filled))
   }
 
-  // "PATSIA" fills in red one letter at a time over the first half of the hero
-  const surnameLetters = heroName.querySelectorAll('.outline .l') // rebuilt when the language changes
-  const filled = Math.round(clamp(y / (hero.offsetHeight * 0.45), 0, 1) * surnameLetters.length)
-  surnameLetters.forEach((l, i) => l.classList.toggle('filled', i < filled))
-
-  // statement words
-  const s = statement.getBoundingClientRect()
-  const lit = Math.floor(clamp((vh * 0.8 - s.top) / (s.height + vh * 0.25), 0, 1) * words.length * 1.05)
-  words.forEach((w, i) => w.classList.toggle('on', i < lit))
+  // statement words light up as you read down
+  if (near(spots.statement)) {
+    const s = spots.statement
+    const lit = Math.floor(clamp((vh * 0.8 - top(s)) / (s.height + vh * 0.25), 0, 1) * words.length * 1.05)
+    words.forEach((w, i) => w.classList.toggle('on', i < lit))
+  }
 
   // timeline line
-  const t = timeline.getBoundingClientRect()
-  timeline.style.setProperty('--p', clamp((vh * 0.6 - t.top) / t.height, 0, 1))
+  if (near(spots.timeline)) {
+    const t = spots.timeline
+    timeline.style.setProperty('--p', clamp((vh * 0.6 - top(t)) / t.height, 0, 1).toFixed(3))
+  }
 
   // "let's talk" slides in from the right as it comes up the screen
-  const tk = talk.getBoundingClientRect()
-  const tp = clamp((vh - tk.top) / (vh * 0.8), 0, 1)
-  talk.style.setProperty('--shift', `${(1 - easeOut(tp)) * 25}vw`)
+  if (near(spots.talk) && !reduceMotion) {
+    const tp = clamp((vh - top(spots.talk)) / (vh * 0.8), 0, 1)
+    talk.style.translate = `${((1 - easeOut(tp)) * 25).toFixed(2)}vw 0`
+  }
 }
 
 let ticking = false
 window.addEventListener('scroll', () => {
+  scrolled = scrollY
   if (ticking) return
   ticking = true
   requestAnimationFrame(() => { onScroll(); ticking = false })
 }, { passive: true })
-// link sizes change with the window and once the font loads, so the nav bar needs re-measuring
-const refreshLayout = () => { onScroll(); moveNavBar(nav.querySelector('a.active')) }
+// sizes change with the window, once the font loads and with the language,
+// so the section positions and the nav bar get measured again
+const refreshLayout = () => { measure(); onScroll(); moveNavBar(nav.querySelector('a.active')) }
 window.addEventListener('resize', refreshLayout)
 onScroll()
 fontsReady.then(refreshLayout)
@@ -912,18 +952,29 @@ if (!reduceMotion) {
 
 
 // ---- big text leans a little with how fast you scroll, then settles ----
-// only runs while scrolling, and only touches the few elements that lean
-// (setting it on <html> made the browser re-check every element on the page every frame)
+// only runs while scrolling, and only touches the headings that are on screen right now.
+// the transform goes straight on the element: a css variable would get passed down to
+// every letter inside it and the browser would restyle all of them every frame
 if (!reduceMotion) {
-  const leaners = document.querySelectorAll('.statement, .talk, .big-title')
-  let lean = 0, lastY = scrollY, leaning = false
+  const visible = new Set()
+  const watch = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) visible.add(entry.target)
+      else { visible.delete(entry.target); entry.target.style.transform = '' }
+    }
+  })
+  document.querySelectorAll('.statement, .talk, .big-title').forEach(el => watch.observe(el))
+
+  let lean = 0, lastY = scrolled, leaning = false
   const settle = () => {
-    const speed = scrollY - lastY
-    lastY = scrollY
+    const speed = scrolled - lastY
+    lastY = scrolled
     lean += (clamp(speed * 0.06, -3, 3) - lean) * 0.12
     const done = Math.abs(lean) < 0.01 && speed == 0
     if (done) lean = 0
-    leaners.forEach(el => el.style.setProperty('--lean', lean.toFixed(3)))
+    const skew = lean ? `skewY(${lean.toFixed(2)}deg)` : ''
+    // big titles only lean once their lines have risen in
+    visible.forEach(el => { if (!el.classList.contains('big-title') || el.classList.contains('in')) el.style.transform = skew })
     if (done) leaning = false
     else requestAnimationFrame(settle)
   }
@@ -933,7 +984,6 @@ if (!reduceMotion) {
     requestAnimationFrame(settle)
   }, { passive: true })
 }
-
 
 // ---- the secret: type "hire" anywhere and it rains red squares ----
 let typed = ''

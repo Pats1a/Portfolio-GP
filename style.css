@@ -293,7 +293,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   letter-spacing: -.035em;
   text-transform: uppercase;
 }
-.hero-name .row { display: block; overflow: hidden; padding-bottom: .04em; }
+.hero-name .row { display: block; overflow: hidden; padding-bottom: .04em; will-change: translate; }
 .hero-name .outline { color: transparent; -webkit-text-stroke: 2px var(--red); text-align: right; }
 /* letters get split in js and slide up one by one */
 .hero-name .l {
@@ -598,7 +598,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   width: 1px;
 }
 .timeline::before { bottom: 0; background: var(--line); }
-.timeline::after { height: calc(var(--p, 0) * 100%); background: var(--red); }
+.timeline::after { bottom: 0; background: var(--red); transform: scaleY(var(--p, 0)); transform-origin: top; }
 
 .job {
   position: relative;
@@ -746,6 +746,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   line-height: .8;
   letter-spacing: -.05em;
   font-variant-numeric: tabular-nums;
+  /* a fixed box, so the number changing (or the font arriving) never nudges anything around it */
+  width: 2.7em;
+  height: .8em;
+  text-align: right;
+  white-space: nowrap;
 }
 
 
@@ -787,8 +792,6 @@ body::after {
 .project.tilting { transition: border-color .4s, transform .1s linear; }
 
 
-/* ---- "let's talk" slides in sideways as you scroll to it (js sets --shift) ---- */
-.talk { translate: var(--shift, 0) 0; }
 
 .footer-links a { color: var(--text); }
 .footer-links a:hover { color: var(--red); }
@@ -881,9 +884,10 @@ mark {
 .to-top:hover { border-color: var(--red); }
 .to-top i {
   position: absolute;
-  inset: auto 0 0 0;
-  height: 0;
+  inset: 0;
   background: color-mix(in srgb, var(--red) 25%, transparent);
+  transform: scaleY(0);
+  transform-origin: bottom;
 }
 .to-top span { position: relative; font-size: 18px; transition: transform .3s var(--ease); }
 .to-top:hover span { transform: translateY(-3px); }
@@ -1079,21 +1083,28 @@ body { font-family: "Archivo", "Noto Sans Georgian", system-ui, sans-serif; }
 
 /* skeleton blocks with a shimmer running over them, like a page that's loading */
 .mock b {
+  position: relative;
   display: block;
   min-height: 7px;
+  overflow: hidden;
   border-radius: 2px;
-  --block: color-mix(in srgb, var(--text) 16%, transparent);
-  background: linear-gradient(90deg, var(--block) 30%, color-mix(in srgb, var(--red) 55%, transparent) 50%, var(--block) 70%);
-  background-size: 300% 100%;
-  animation: shimmer 2.4s linear infinite;
+  background: color-mix(in srgb, var(--text) 16%, transparent);
   transition: background .5s;
 }
-@keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.mock b::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--red) 55%, transparent), transparent);
+  transform: translateX(-100%);
+  animation: shimmer 2.4s linear infinite paused;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
 /* the shimmer only runs while the projects are actually on screen (js adds .on-screen) */
-.mock b { animation-play-state: paused; }
-.work.on-screen .mock b { animation-play-state: running; }
+.work.on-screen .mock b::after { animation-play-state: running; }
 /* on hover the page "finishes loading" and the accent blocks turn red */
-.project:hover .mock b.accent { background: var(--red); animation: none; }
+.project:hover .mock b.accent { background: var(--red); }
+.project:hover .mock b.accent::after { display: none; }
 
 .mock .line { height: 7px; min-height: 0; }
 .mock .w70 { width: 70%; } .mock .w40 { width: 40%; }
@@ -1135,9 +1146,6 @@ body { font-family: "Archivo", "Noto Sans Georgian", system-ui, sans-serif; }
 }
 
 
-/* ---- text leans a little with scroll speed (js sets --lean on <html>) ---- */
-.statement, .talk, .big-title.reveal.in { transform: skewY(calc(var(--lean, 0) * 1deg)); }
-.statement, .talk { transition: transform .2s linear; }
 
 
 /* ---- light sweeping across "hire me" every few seconds ---- */
@@ -1145,15 +1153,15 @@ body { font-family: "Archivo", "Noto Sans Georgian", system-ui, sans-serif; }
 .hire-btn::after {
   content: "";
   position: absolute;
-  top: 0; left: -60%;
+  top: 0; left: 0;
   width: 40%; height: 100%;
   background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
-  transform: skewX(-20deg);
+  transform: translateX(-150%) skewX(-20deg);
   animation: sweep 4.5s ease-in-out infinite 2s;
 }
 @keyframes sweep {
-  0%, 75% { left: -60%; }
-  100% { left: 130%; }
+  0%, 75% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(330%) skewX(-20deg); }
 }
 
 
@@ -1449,7 +1457,7 @@ kbd {
   .theme-btn.turn svg, .lang-btn.pop { animation: none; }
   .talk.wave .l, .palette.opening [role="option"] { animation: none; }
   .signature span { transition: none; }
-  .mock b, .hire-btn::after { animation: none; }
+  .mock b::after, .hire-btn::after { animation: none; }
   .hero-name.glitch .row { animation: none; }
   .statement, .talk, .big-title.reveal.in { transform: none; }
   .big-title .line > span { transform: none; transition: none; }
