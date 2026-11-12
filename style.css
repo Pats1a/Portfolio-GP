@@ -702,7 +702,7 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* ---- footer ---- */
 .footer { border-top: 1px solid var(--line); padding: 26px 0; color: var(--muted); }
-.footer-inner { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.footer-inner { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-right: 64px; } /* room for the back-to-top button */
 .footer a:hover { color: var(--red); }
 
 
@@ -1172,6 +1172,104 @@ body { font-family: "Archivo", "Noto Sans Georgian", system-ui, sans-serif; }
 }
 
 
+/* ---- command palette (ctrl / cmd + K) ---- */
+.palette {
+  position: fixed;
+  inset: 0;
+  z-index: 390;
+  display: grid;
+  justify-items: center;
+  align-items: start;
+  padding: 14vh var(--pad) 0;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(6px); /* only while it's open, so it doesn't cost anything the rest of the time */
+  opacity: 0;
+  transition: opacity .25s;
+}
+.palette[hidden] { display: none; }
+.palette.open { opacity: 1; }
+.palette-box {
+  width: min(600px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow:
+    0 40px 80px -30px rgba(0, 0, 0, .7),
+    0 0 70px -20px color-mix(in srgb, var(--red) 55%, transparent);
+  transform: translateY(-14px) scale(.96);
+  transition: transform .35s var(--ease);
+}
+.palette.open .palette-box { transform: none; }
+
+.palette-top { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.palette-prompt { color: var(--red); font-size: 18px; }
+#palette-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--text);
+  font: 500 18px "Archivo", "Noto Sans Georgian", sans-serif;
+}
+#palette-input::placeholder { color: var(--muted); }
+.palette-top kbd { font-size: 11px; color: var(--muted); }
+
+.palette-list { max-height: min(50vh, 380px); overflow-y: auto; padding: 8px; }
+.palette-group { padding: 12px 12px 6px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; }
+[lang="ka"] .palette-group { text-transform: none; letter-spacing: 0; }
+.palette-list [role="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.palette-list [aria-selected="true"] { background: var(--red); color: var(--on-red); }
+.palette-list [role="option"] i { font-style: normal; opacity: 0; transition: opacity .2s; }
+.palette-list [aria-selected="true"] i { opacity: 1; }
+.palette-list [aria-selected="true"] kbd { color: var(--on-red); border-color: currentColor; }
+.palette-empty { padding: 24px 12px; color: var(--muted); text-align: center; }
+.palette-foot { padding: 10px 18px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+/* the rows slide in one after another, only when it opens (not on every key press) */
+.palette.opening [role="option"] { animation: palette-row .35s var(--ease) both; animation-delay: calc(var(--n) * 18ms); }
+@keyframes palette-row { from { opacity: 0; transform: translateY(6px); } }
+.key-hint kbd { cursor: pointer; }
+
+
+/* ---- the big name at the bottom, outlined, fills with red when you hover it ---- */
+.signature { overflow: hidden; padding: 10px var(--pad) 0; margin-bottom: 22px; line-height: .82; }
+.signature span {
+  display: inline-block;
+  padding-bottom: .06em;
+  white-space: nowrap;
+  font-weight: 900;
+  font-stretch: var(--wide);
+  letter-spacing: -.04em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--red) 60%, transparent);
+  background: linear-gradient(90deg, var(--red) 50%, transparent 50%) 100% 0 / 200% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: background-position 1s var(--ease);
+}
+.signature:hover span { background-position: 0 0; }
+[lang="ka"] .signature span { padding: .1em 0 .22em; letter-spacing: 0; text-transform: none; }
+
+
+/* keyboard tips are no use on phones and tablets */
+@media (hover: none) { .key-hint { display: none; } }
+
+
+/* ---- "let's talk" waves when the mouse comes over it (js adds .wave) ---- */
+.talk.wave .l { animation: hop .7s var(--ease) calc(var(--i) * 30ms); }
+@keyframes hop { 35% { translate: 0 -.14em; color: var(--red); } }
+
+
 /* ---- footer keyboard hint ---- */
 kbd {
   display: inline-block;
@@ -1349,6 +1447,8 @@ kbd {
   .service, .to-top i, mark { transition: none; }
   .curtain, .lang-liquid { display: none; }
   .theme-btn.turn svg, .lang-btn.pop { animation: none; }
+  .talk.wave .l, .palette.opening [role="option"] { animation: none; }
+  .signature span { transition: none; }
   .mock b, .hire-btn::after { animation: none; }
   .hero-name.glitch .row { animation: none; }
   .statement, .talk, .big-title.reveal.in { transform: none; }

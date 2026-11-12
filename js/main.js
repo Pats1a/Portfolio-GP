@@ -282,6 +282,8 @@ function swapLanguage(next) {
   updateThemeBtn()
   refreshLayout()
   tick() // the online / asleep text is translated too
+  fitSignature()
+  updateKeyHint()
 }
 
 // drips along the edge, different every time. w is half the width
@@ -516,6 +518,7 @@ const hero = document.querySelector('.hero')
 const toTop = document.getElementById('to-top')
 const toTopFill = document.getElementById('to-top-fill')
 const scrollCue = document.querySelector('.scroll-cue')
+const nameRows = heroName.querySelectorAll('.row')
 
 function onScroll() {
   const y = scrollY
@@ -529,6 +532,13 @@ function onScroll() {
   toTopFill.style.height = pageProgress * 100 + '%'
 
   scrollCue.classList.toggle('gone', y > 80)
+
+  // the two halves of the name pull apart as the hero scrolls away
+  if (!reduceMotion) {
+    const apart = clamp(y / hero.offsetHeight, 0, 1)
+    nameRows[0].style.translate = `${-apart * 14}vw 0`
+    nameRows[1].style.translate = `${apart * 14}vw 0`
+  }
 
   // "PATSIA" fills in red one letter at a time over the first half of the hero
   const surnameLetters = heroName.querySelectorAll('.outline .l') // rebuilt when the language changes
@@ -636,6 +646,13 @@ if (finePointer && !reduceMotion) {
     requestAnimationFrame(drift)
   })
 
+  // "let's talk" does a little wave when the mouse comes over it
+  talk.addEventListener('mouseenter', () => {
+    if (talk.classList.contains('wave')) return
+    talk.classList.add('wave')
+    setTimeout(() => talk.classList.remove('wave'), 700 + talk.querySelectorAll('.l').length * 30)
+  })
+
   // the dot shrinks a bit over anything clickable
   document.addEventListener('mouseover', e => {
     cursor.classList.toggle('link', !!e.target.closest('a, button, input, textarea'))
@@ -698,6 +715,166 @@ if (finePointer && !reduceMotion) {
     })
   })
 }
+
+
+// ---- command palette ----
+// ctrl / cmd + K (or /) opens a little search box like the ones in code editors.
+// jump to any section, switch theme or language, copy the email, open my links
+const palette = document.getElementById('palette')
+const paletteInput = document.getElementById('palette-input')
+const paletteList = document.getElementById('palette-list')
+const onMac = /Mac|iPhone|iPad/.test(navigator.platform)
+let paletteItems = [], picked = 0, returnFocus = null
+
+function commands() {
+  const go = [...nav.querySelectorAll('a')].map(a => ({
+    group: say('pGo'),
+    label: a.textContent,
+    run: () => document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' }),
+  }))
+  const open = url => () => window.open(url, '_blank', 'noopener')
+  return [
+    ...go,
+    { group: say('pDo'), label: say('pTheme'), key: 'T', run: switchTheme },
+    { group: say('pDo'), label: say('pLang'), key: 'L', run: switchLang },
+    { group: say('pDo'), label: say('pCopy'), run: () => copyBtn.click() },
+    { group: say('pOpen'), label: 'GitHub', run: open('https://github.com/Pats1a') },
+    { group: say('pOpen'), label: 'LinkedIn', run: open('https://www.linkedin.com/in/giorgi-patsia-95bb5a397/') },
+    { group: say('pOpen'), label: say('pSource'), run: open('https://github.com/Pats1a/Portfolio-GP') },
+  ]
+}
+
+// loose matching: the letters you type just have to show up in order, so "lnk" finds "LinkedIn"
+function matches(text, query) {
+  text = text.toLowerCase()
+  let at = 0
+  for (const ch of query.toLowerCase().replace(/\s/g, '')) {
+    at = text.indexOf(ch, at) + 1
+    if (!at) return false
+  }
+  return true
+}
+
+function renderPalette() {
+  const query = paletteInput.value.trim()
+  paletteItems = commands().filter(c => !query || matches(c.label + ' ' + c.group, query))
+  picked = Math.min(picked, Math.max(paletteItems.length - 1, 0))
+
+  if (!paletteItems.length) {
+    paletteList.innerHTML = `<li class="palette-empty">${say('pEmpty')}</li>`
+    paletteInput.removeAttribute('aria-activedescendant')
+    return
+  }
+  let lastGroup = ''
+  paletteList.innerHTML = paletteItems.map((c, i) => {
+    const heading = c.group != lastGroup ? `<li class="palette-group mono" role="presentation">${c.group}</li>` : ''
+    lastGroup = c.group
+    return heading + `<li id="pc-${i}" role="option" aria-selected="${i == picked}" data-i="${i}" style="--n:${i}">
+      <span>${c.label}</span>${c.key ? `<kbd>${c.key}</kbd>` : '<i aria-hidden="true">↵</i>'}</li>`
+  }).join('')
+  paletteInput.setAttribute('aria-activedescendant', 'pc-' + picked)
+}
+
+function pick(i) {
+  picked = (i + paletteItems.length) % paletteItems.length
+  paletteList.querySelectorAll('[role="option"]').forEach(li => li.setAttribute('aria-selected', li.dataset.i == picked))
+  paletteInput.setAttribute('aria-activedescendant', 'pc-' + picked)
+  document.getElementById('pc-' + picked)?.scrollIntoView({ block: 'nearest' })
+}
+
+function openPalette() {
+  if (!palette.hidden) return
+  returnFocus = document.activeElement
+  document.getElementById('palette-label').textContent = say('pLabel')
+  document.getElementById('palette-foot').textContent = say('pFoot')
+  paletteInput.placeholder = say('pHint')
+  paletteInput.value = ''
+  picked = 0
+  renderPalette()
+  palette.hidden = false
+  void palette.offsetWidth // so the opening animation plays
+  palette.classList.add('open', 'opening')
+  setTimeout(() => palette.classList.remove('opening'), 500)
+  paletteInput.focus()
+}
+
+function closePalette() {
+  if (palette.hidden) return
+  palette.classList.remove('open')
+  palette.hidden = true
+  returnFocus?.focus?.({ preventScroll: true })
+}
+
+// close first, then run, so the theme / language animations don't capture the open box
+function runPicked() {
+  const c = paletteItems[picked]
+  if (!c) return
+  closePalette()
+  setTimeout(c.run, 120)
+}
+
+document.addEventListener('keydown', e => {
+  const typing = e.target.closest?.('input, textarea') && e.target != paletteInput
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() == 'k') {
+    e.preventDefault()
+    palette.hidden ? openPalette() : closePalette()
+  } else if (e.key == '/' && !typing && palette.hidden) {
+    e.preventDefault()
+    openPalette()
+  }
+})
+
+paletteInput.addEventListener('input', () => { picked = 0; renderPalette() })
+paletteInput.addEventListener('keydown', e => {
+  if (e.key == 'ArrowDown') { e.preventDefault(); pick(picked + 1) }
+  else if (e.key == 'ArrowUp') { e.preventDefault(); pick(picked - 1) }
+  else if (e.key == 'Enter') { e.preventDefault(); runPicked() }
+  else if (e.key == 'Escape') closePalette()
+  else if (e.key == 'Tab') e.preventDefault() // the input is the only thing in here to focus
+})
+paletteList.addEventListener('mousemove', e => {
+  const li = e.target.closest('[role="option"]')
+  if (li && li.dataset.i != picked) pick(+li.dataset.i)
+})
+paletteList.addEventListener('click', e => {
+  const li = e.target.closest('[role="option"]')
+  if (li) { pick(+li.dataset.i); runPicked() }
+})
+// clicking the dark area around the box closes it
+palette.addEventListener('mousedown', e => { if (e.target == palette) closePalette() })
+
+// the footer hint says Ctrl K, macs get ⌘ K. the hint itself also opens it
+function updateKeyHint() {
+  const kbds = document.querySelectorAll('.key-hint kbd')
+  const last = kbds[kbds.length - 1]
+  if (last) last.textContent = onMac ? '⌘ K' : 'Ctrl K'
+}
+updateKeyHint()
+document.querySelector('.key-hint').addEventListener('click', e => { if (e.target.closest('kbd')) openPalette() })
+
+// one tip per visit, on computers only, once the intro has settled
+if (finePointer) {
+  setTimeout(() => {
+    try {
+      if (sessionStorage.tipShown || !palette.hidden) return
+      sessionStorage.tipShown = '1'
+    } catch (e) {}
+    showToast(say('pTip').replace('{k}', onMac ? '⌘ K' : 'Ctrl K'))
+  }, 9000)
+}
+
+
+// ---- the big name at the bottom: sized so it spans the page exactly ----
+const signature = document.querySelector('.signature span')
+function fitSignature() {
+  signature.style.fontSize = '100px'
+  const box = signature.parentElement
+  const room = box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) * 2
+  signature.style.fontSize = Math.floor(100 * room / signature.scrollWidth) + 'px'
+}
+fitSignature()
+fontsReady.then(fitSignature)
+window.addEventListener('resize', fitSignature)
 
 
 // little things for people who wander off or poke around

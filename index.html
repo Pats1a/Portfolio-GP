@@ -384,11 +384,13 @@
 </main>
 
 <footer class="footer">
+  <!-- the name, as big as the page is wide. js sizes it to fit -->
+  <p class="signature" aria-hidden="true"><span data-i18n="footer.big">Giorgi Patsia</span></p>
   <div class="container footer-inner mono">
     <span>© <span id="year">2026</span> <span data-i18n="footer.name">Giorgi Patsia</span></span>
     <span class="footer-links"><a href="https://github.com/Pats1a" target="_blank" rel="noopener">GitHub</a> · <a href="https://www.linkedin.com/in/giorgi-patsia-95bb5a397/" target="_blank" rel="noopener">LinkedIn</a></span>
     <span data-i18n="footer.thanks">Thanks for scrolling all the way down</span>
-    <span class="key-hint" data-i18n="footer.keys">Press <kbd>T</kbd> for theme, <kbd>L</kbd> for language</span>
+    <span class="key-hint" data-i18n="footer.keys">Press <kbd>T</kbd> for theme, <kbd>L</kbd> for language, <kbd>Ctrl K</kbd> for everything</span>
   </div>
 </footer>
 
@@ -398,6 +400,20 @@
 </button>
 
 <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
+
+<!-- command palette: ctrl / cmd + K, or the / key. js fills the list -->
+<div class="palette" id="palette" hidden>
+  <div class="palette-box" role="dialog" aria-modal="true" aria-labelledby="palette-label">
+    <label class="sr-only" id="palette-label" for="palette-input"></label>
+    <div class="palette-top">
+      <span class="palette-prompt mono" aria-hidden="true">&gt;</span>
+      <input id="palette-input" type="text" role="combobox" aria-expanded="true" aria-controls="palette-list" autocomplete="off" spellcheck="false">
+      <kbd>Esc</kbd>
+    </div>
+    <ul class="palette-list" id="palette-list" role="listbox"></ul>
+    <p class="palette-foot mono" id="palette-foot"></p>
+  </div>
+</div>
 
 <script src="js/i18n.js"></script>
 <script src="js/dots.js"></script>

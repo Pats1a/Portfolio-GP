@@ -116,8 +116,9 @@ const KA = {
   'contact.note': 'გაიხსნება თქვენი ფოსტის აპლიკაცია, უკვე შევსებული შეტყობინებით.',
 
   'footer.name': 'გიორგი ფაცია',
+  'footer.big': 'გიორგი ფაცია',
   'footer.thanks': 'მადლობა, რომ ბოლომდე ჩამოხვედით',
-  'footer.keys': 'დააჭირეთ <kbd>T</kbd>-ს თემისთვის, <kbd>L</kbd>-ს ენისთვის',
+  'footer.keys': 'დააჭირეთ <kbd>T</kbd>-ს თემისთვის, <kbd>L</kbd>-ს ენისთვის, <kbd>Ctrl K</kbd>-ს ყველაფრისთვის',
 }
 
 // strings that only live in javascript (toasts, tab title, button labels for screen readers)
@@ -135,6 +136,18 @@ const STRINGS = {
     online: 'probably online',
     asleep: 'probably asleep 😴',
     secret: 'You found the secret. Let\'s talk 👀',
+    pLabel: 'Search the site',
+    pHint: 'Where to? Start typing...',
+    pGo: 'Go to',
+    pDo: 'Actions',
+    pOpen: 'Links',
+    pTheme: 'Switch theme',
+    pLang: 'Switch language',
+    pCopy: 'Copy my email',
+    pSource: 'Code of this site',
+    pEmpty: 'Nothing found',
+    pFoot: '↑ ↓ to move · Enter to go · Esc to close',
+    pTip: 'Tip: press {k} to jump anywhere',
   },
   ka: {
     title: 'გიორგი ფაცია · ვებ-დეველოპერი',
@@ -149,6 +162,18 @@ const STRINGS = {
     online: 'ალბათ ონლაინ ვარ',
     asleep: 'ალბათ მძინავს 😴',
     secret: 'საიდუმლო იპოვეთ! ვისაუბროთ 👀',
+    pLabel: 'საიტზე ძიება',
+    pHint: 'სად გადავიდეთ? დაიწყეთ აკრეფა...',
+    pGo: 'გადასვლა',
+    pDo: 'მოქმედებები',
+    pOpen: 'ბმულები',
+    pTheme: 'თემის შეცვლა',
+    pLang: 'ენის შეცვლა',
+    pCopy: 'ელფოსტის კოპირება',
+    pSource: 'ამ საიტის კოდი',
+    pEmpty: 'ვერაფერი მოიძებნა',
+    pFoot: '↑ ↓ არჩევა · Enter გადასვლა · Esc დახურვა',
+    pTip: 'რჩევა: დააჭირეთ {k}-ს და გადადით სადაც გინდათ',
   },
 }
 
